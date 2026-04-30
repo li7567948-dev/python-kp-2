@@ -1,0 +1,56 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# parameter for smooth curve
+t = np.linspace(0, 4*np.pi, 1000)
+
+# parametric equations
+x = (2 + np.cos(1.5*t)) * np.cos(t)
+y = (2 + np.cos(1.5*t)) * np.sin(t)
+z = np.sin(1.5*t)
+
+# create figure
+fig = plt.figure(figsize=(14, 6))
+
+# --- Plot 1: original curve ---
+ax1 = fig.add_subplot(1, 2, 1, projection='3d')
+ax1.plot(x, y, z, color='red', linewidth=2, label='curve')
+ax1.set_title("Original Trefoil Knot")
+ax1.set_xlabel("X")
+ax1.set_ylabel("Y")
+ax1.set_zlabel("Z")
+ax1.legend()
+
+# --- Plot 2: copy with tangents ---
+ax2 = fig.add_subplot(1, 2, 2, projection='3d')
+ax2.plot(x, y, z, color='red', linewidth=2, label='curve')
+
+# tangent parameter with required step = 0.1
+t_tan = np.arange(0, 4*np.pi + 0.05, 0.1)
+
+# coordinates of tangent points
+x_t = (2 + np.cos(1.5*t_tan)) * np.cos(t_tan)
+y_t = (2 + np.cos(1.5*t_tan)) * np.sin(t_tan)
+z_t = np.sin(1.5*t_tan)
+
+# derivatives (tangent vectors)
+dx = -np.sin(t_tan)*(2 + np.cos(1.5*t_tan)) - 1.5*np.sin(1.5*t_tan)*np.cos(t_tan)
+dy =  np.cos(t_tan)*(2 + np.cos(1.5*t_tan)) - 1.5*np.sin(1.5*t_tan)*np.sin(t_tan)
+dz =  1.5*np.cos(1.5*t_tan)
+
+# plot tangent vectors
+ax2.quiver(
+    x_t, y_t, z_t,
+    dx, dy, dz,
+    length=0.4, normalize=True, color='blue', alpha=0.6,
+    label='tangent vectors'
+)
+
+ax2.set_title("Copy with Tangent Vectors (step = 0.1)")
+ax2.set_xlabel("X")
+ax2.set_ylabel("Y")
+ax2.set_zlabel("Z")
+ax2.legend()
+
+plt.tight_layout()
+plt.show()
