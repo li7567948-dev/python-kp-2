@@ -1,0 +1,55 @@
+import sympy as sp
+
+# define variables
+x, y = sp.symbols('x y')
+
+# function
+f = x**4 + y**3 - 3*x**2 + y**2 + x - 2*y + 1
+
+# first derivatives
+fx = sp.diff(f, x)
+fy = sp.diff(f, y)
+
+# second derivatives
+fxx = sp.diff(fx, x)
+fyy = sp.diff(fy, y)
+fxy = sp.diff(fx, y)
+
+# solve stationary points (dict=True returns a list of dictionaries, perfect for .subs!)
+critical_points = sp.solve([fx, fy], [x, y], dict=True)
+
+print("Problem 4C | Classification of stationary points:\n")
+
+for pt in critical_points:
+    # safe numeric values
+    xn = float(sp.re(pt[x].evalf()))
+    yn = float(sp.re(pt[y].evalf()))
+    
+    # create a clean evaluation dictionary using the real numbers
+    pt_eval = {x: xn, y: yn}
+    
+    # Hessian determinant
+    H = fxx.subs(pt_eval) * fyy.subs(pt_eval) - fxy.subs(pt_eval)**2
+    
+    # function value (The maximum/minimum values asked by the problem)
+    val = f.subs(pt_eval)
+    
+    print(f"Point ({xn:.3f}, {yn:.3f})")
+    print(f"f(x,y) = {float(val):.4f}")
+    
+    # evaluate H and fxx to floats for safe comparison
+    H_val = float(H)
+    fxx_val = float(fxx.subs(pt_eval))
+    
+    if H_val > 0:
+        # check second derivative for min/max
+        if fxx_val > 0:
+            print("Type: Local Minimum")
+        else:
+            print("Type: Local Maximum")
+    elif H_val < 0:
+        print("Type: Saddle Point")
+    else:
+        print("Type: Inconclusive")
+        
+    print("-" * 35)
