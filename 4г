@@ -1,0 +1,47 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sp
+
+# ===== function =====
+x, y = sp.symbols('x y')
+f = x**4 + y**3 - 3*x**2 + y**2 + x - 2*y + 1
+
+# ===== find stationary points =====
+fx = sp.diff(f, x)
+fy = sp.diff(f, y)
+
+critical_points = sp.solve([fx, fy], [x, y], dict=True)
+
+points = []
+for pt in critical_points:
+    xn = float(sp.re(pt[x].evalf()))
+    yn = float(sp.re(pt[y].evalf()))
+    zn = xn**4 + yn**3 - 3*xn**2 + yn**2 + xn - 2*yn + 1
+    points.append((xn, yn, zn))
+
+# ===== grid =====
+x_vals = np.linspace(-2, 2, 200)
+y_vals = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x_vals, y_vals)
+
+Z = X**4 + Y**3 - 3*X**2 + Y**2 + X - 2*Y + 1
+
+# ===== plot 3D contour =====
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# 🔥 core requirement: contours at different heights
+ax.contour(X, Y, Z, levels=30, cmap='viridis')
+
+# 🔥 add stationary points (strong answer)
+for (xn, yn, zn) in points:
+    ax.scatter(xn, yn, zn, color='red', s=60)
+
+ax.set_title("3D contour lines at different heights")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+
+ax.view_init(elev=30, azim=45)
+
+plt.show()
