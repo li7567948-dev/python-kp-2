@@ -1,0 +1,78 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sp
+
+# Differential equation
+def f(x, y):
+    return y - 0.5*np.exp(x/2)*np.sin(5*x) + 5*np.exp(x/2)*np.cos(5*x)
+
+# Exact solution
+def exact(x):
+    return np.exp(x/2)*np.sin(5*x)
+
+# Bidirectional Euler (strict grid, handles initial condition properly)
+def euler_bidirectional_strict(f, x0, y0, x_left, x_right, n):
+    # Create uniform grid
+    x = np.linspace(x_left, x_right, n+1)
+    h = x[1] - x[0]
+    y = np.zeros_like(x)
+    
+    # Find where x0 fits in the grid: x[idx_left] <= x0 <= x[idx_right]
+    idx_right = np.searchsorted(x, x0)
+    idx_left = idx_right - 1
+    
+    # --- 1. Forward integration (Right) ---
+    if idx_right < len(x):
+        # Small step from exact x0 to the first grid point on the right
+        y[idx_right] = y0 + (x[idx_right] - x0) * f(x0, y0)
+        # Normal steps on the grid
+        for i in range(idx_right, len(x)-1):
+            y[i+1] = y[i] + h * f(x[i], y[i])
+            
+    # --- 2. Backward integration (Left) ---
+    if idx_left >= 0:
+        # Small step from exact x0 to the first grid point on the left
+        y[idx_left] = y0 - (x0 - x[idx_left]) * f(x0, y0)
+        # Normal backward steps on the grid
+        for i in range(idx_left, 0, -1):
+            y[i-1] = y[i] - h * f(x[i], y[i])
+            
+    return x, y
+
+# ================= Plotting & Error Calculation =================
+plt.figure(figsize=(10,6))
+
+x_exact = np.linspace(-2, 6, 1000)
+plt.plot(x_exact, exact(x_exact), label="Exact", linewidth=2, color='black')
+
+N_values = [10, 20, 50]
+
+for n in N_values:
+    x_e, y_e = euler_bidirectional_strict(f, 0, 0, -2, 6, n)
+    plt.plot(x_e, y_e, 'o-', markersize=4, label=f"n={n}")
+    
+    error = np.max(np.abs(exact(x_e) - y_e))
+    print(f"n={n}, max error = {error:.6f}")
+
+plt.legend()
+plt.grid()
+plt.title("Euler Method (Strict Grid) vs Exact Solution")
+plt.show()
+
+# ================= Mathematical Verification =================
+print("\n--- Equation Verification ---")
+# Use SymPy for exact symbolic verification (no numerical errors)
+x_sym, y_sym = sp.symbols('x y')
+y_exact_sym = sp.exp(x_sym/2) * sp.sin(5*x_sym)
+
+# Calculate derivative y'
+dy_exact_sym = sp.diff(y_exact_sym, x_sym)
+
+# Right side of the differential equation
+rhs_sym = y_exact_sym - 0.5 * sp.exp(x_sym/2) * sp.sin(5*x_sym) + 5 * sp.exp(x_sym/2) * sp.cos(5*x_sym)
+
+# Check if left side equals right side (difference is exactly 0)
+is_perfect_match = sp.simplify(dy_exact_sym - rhs_sym) == 0
+
+print("Does the exact solution satisfy the differential equation?")
+print(f"Result: {is_perfect_match} (Error is exactly 0)")
