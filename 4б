@@ -1,0 +1,52 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import sympy as sp
+
+# ================= 1. Calculate Stationary Points =================
+x_sym, y_sym = sp.symbols('x y')
+f_sym = x_sym**4 + y_sym**3 - 3*x_sym**2 + y_sym**2 + x_sym - 2*y_sym + 1
+
+# Partial derivatives
+fx = sp.diff(f_sym, x_sym)
+fy = sp.diff(f_sym, y_sym)
+
+# Solve the system fx = 0, fy = 0
+critical_points = sp.solve([fx, fy], [x_sym, y_sym])
+
+print("Problem 4B | Stationary points (x, y):")
+points_numeric = []
+
+for pt in critical_points:
+    # Use sp.re().evalf() to safely extract the real numerical value
+    xn = float(sp.re(pt[0].evalf()))
+    yn = float(sp.re(pt[1].evalf()))
+    points_numeric.append((xn, yn))
+    print(f"({xn:.3f}, {yn:.3f})")
+
+# ================= 2. Plotting (Combining 4A and 4B) =================
+# Define grid for contour plot
+x_val = np.linspace(-2, 2, 200)
+y_val = np.linspace(-2, 2, 200)
+X, Y = np.meshgrid(x_val, y_val)
+
+# Function for numerical calculation
+Z = X**4 + Y**3 - 3*X**2 + Y**2 + X - 2*Y + 1
+
+plt.figure(figsize=(8, 6))
+
+# Contour plot from 4A
+cont = plt.contour(X, Y, Z, 20, cmap='viridis')
+plt.clabel(cont, inline=True, fontsize=8)
+
+# Mark the stationary points on the graph (Requirement 4B)
+for idx, (xn, yn) in enumerate(points_numeric):
+    # Only add the label to the legend once
+    label = 'Stationary Points' if idx == 0 else ""
+    plt.plot(xn, yn, marker='*', markersize=10, color='red', linestyle='None', label=label)
+
+plt.title("Contour Plot with Stationary Points")
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.grid(True)
+plt.legend()
+plt.show()
